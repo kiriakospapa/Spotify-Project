@@ -2,6 +2,22 @@ from unicodedata import name
 import matplotlib.pyplot as plt
 import numpy
 import plotly.express as px
+import spotipy
+import time
+
+
+def try_to_login(sp):
+    try:
+        username = sp.me()['display_name']
+        followers = sp.me()['followers']['total']
+        print(f"Congratulations! You have been connected to a spotify account with the username {username}")
+
+    except:
+        print("Probably you have made many requests in a short manner of time, please wait a little:)")
+        time.sleep(5)
+        try_to_login(sp)
+
+    return username,followers    
 
 
 def make_autopct(values):

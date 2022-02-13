@@ -10,17 +10,17 @@ class Spotify():
     """Spotify class that contains plenty of methods to handle your user or retrieve data"""
     
     def __init__(self, cid, secret) -> None:
-        scope = 'user-read-private'
 
-    
-        # Get the token so we don't need to access 
-        token = util.prompt_for_user_token(scope, client_id=cid, client_secret=secret)
+        self.cid = cid
+        self.secret = secret
+
+        scope = 'user-read-private'      
+   
+        # Get the token so we don't need to access every time
+        token = util.prompt_for_user_token(scope, client_id=self.cid, client_secret=self.secret)
         sp = spotipy.Spotify(auth=token)
         
-        self.username = sp.me()['display_name']
-        self.followers = sp.me()['followers']['total']
-
-        print(f"Congratulations! You have been connected to a spotify account with the username {self.username}")
+        self.username, self.followers = try_to_login(sp)       
     
    
     def get_username(self):
@@ -36,7 +36,7 @@ class Spotify():
     def get_likedd_songs_artists(self):
         """Returns all the artitsts of your liked songs"""
         scope = 'user-library-read'
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=cid, client_secret=secret))
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, client_secret=self.secret))
         offset = 1
         tracks = sp.current_user_saved_tracks(limit=50)['items']
         singers = []
@@ -52,3 +52,13 @@ class Spotify():
                 singers.append(artist['name'])
 
         return singers
+
+
+    def is_playing_now(self):
+        scope = 'user-read-playback-state'
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, client_secret=self.secret))
+        print(sp.current_user_playing_track())
+
+sp = Spotify(cid, secret)
+
+sp.is_playing_now()
