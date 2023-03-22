@@ -5,6 +5,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import spotipy.util as util
 from secrets import cid, secret
 from functions import *
+from typing import List
 
     
 
@@ -25,20 +26,46 @@ class Spotify():
         self.username, self.followers, self.id = try_to_login(sp)       
     
    
-    def get_username(self):
-        """Returns the username of the profile"""
+    def get_username(self) -> str:
+        """
+        This function returns the username of the account that is used
+
+        Args:
+            None
+
+        Returns: 
+            str: The username of the linked account
+        """
         return self.username
 
    
-    def get_number_of_followers(self):
-        """Returns the numnber of followers that the profile has"""
-        return self.followers    
+    def get_number_of_followers(self) -> int:
+        """
+
+        This function returns the number of the followers of the account that is used
+
+        Args:
+            None
+
+        Returns:
+            int: The number of followers of the linked account
+        """
+        return int(self.followers)    
     
 
-    def get_liked_songs_artists(self):
-        """Returns all the artitsts of your liked songs"""
+    def get_liked_songs_artists(self) -> List[str]:
+        """
+        
+        This function returns all the name of the artists that the user has liked
+        
+        Args:
+            None
+        
+        Returns:
+            List[stt]: The name of the artists that the linked account has liked"""
         scope = 'user-library-read'
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, client_secret=self.secret))
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, 
+                                                       client_secret=self.secret))
         offset = 1
         tracks = sp.current_user_saved_tracks(limit=50)['items']
         singers = []
@@ -49,16 +76,29 @@ class Spotify():
             results = sp.next(results)
             tracks.extend(results['items'])
 
-        for truck in tracks:
-            for artist in truck['track']['artists']:
-                singers.append(artist['name'])
+        #for truck in tracks:
+        #     for artist in truck['track']['artists']:
+        #         singers.append(artist['name'])
+        singers = [artist['name'] for track in tracks for artist in track['track']['artists']]
 
         return singers
 
 
-    def print_song_playing_now(self):
+    def print_song_playing_now(self) -> None:
+        """
+
+        This function prints if a song is playing at the account linked. If yes,
+        It print tha name of the song and the artist/s
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         scope = 'user-read-playback-state'
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, client_secret=self.secret))
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, 
+                                                       client_secret=self.secret))
         
         artists = None
 
@@ -69,10 +109,12 @@ class Spotify():
             print('No song is playing now')
         
         if artists:
-            # name/s of the/- artist/s
+            # name/s of the artist/s
             names = []
-            for artist in artists:
-                names.append(artist['name'])
+
+            names = [artist['name'] for artist in artists]
+            #for artist in artists:
+            #    names.append(artist['name'])
         
             # song name 
             song_name  = sp.current_user_playing_track()['item']['name']
@@ -81,9 +123,19 @@ class Spotify():
             print('Artists: ', *names)  
 
 
-    def return_top_songs(self, return_ids=False):
+    def return_top_songs(self, return_ids=False) -> List[str]:
+            """
+            This functions returns the most played songs by the account in long term
+
+            Args:
+                None
+
+            Returns:
+                List[str]: The most played songs, in long term,  by the linked account 
+            """
             scope = 'user-top-read'
-            sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, client_secret=self.secret))
+            sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, 
+                                                           client_secret=self.secret))
 
             results = sp.current_user_top_tracks(limit=50, time_range="long_term")
             top_tracks = results['items']
@@ -92,11 +144,8 @@ class Spotify():
                 results = sp.next(results)
                 top_tracks.extend(results['items']['name'])
             
-            tracks_to_return = []
-            tracks_to_return_id = []
-            for top_track in top_tracks:
-                print(top_track['id'])
-                tracks_to_return.append(top_track['name'])
+            tracks_to_return_id = [top_track['id'] for top_track in top_tracks]
+            tracks_to_return = [top_track['name'] for top_track in top_tracks]
             
             if return_ids:
                 return tracks_to_return, tracks_to_return_id
@@ -106,7 +155,8 @@ class Spotify():
 
     def get_saved_albums(self):
         scope = 'playlist-read-private'
-        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, client_secret=self.secret))
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, 
+                                                       client_secret=self.secret))
         
         playlists = sp.current_user_playlists()
         playlist_names = [playlist['name'] for playlist in playlists['items']]
@@ -117,3 +167,6 @@ sp = Spotify(cid, secret)
 plot_artists_with_most_songs(sp.get_liked_songs_artists())
 
 sp.get_saved_albums()
+
+print(sp.return_top_songs())
+
