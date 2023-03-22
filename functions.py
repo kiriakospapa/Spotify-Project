@@ -7,17 +7,20 @@ import time
 
 
 def try_to_login(sp):
+    username = '_'
+    followers = 0
     try:
         username = sp.me()['display_name']
         followers = sp.me()['followers']['total']
-        print(f"Congratulations! You have been connected to a spotify account with the username {username}")
+        id = print(sp.me()['id'])
+        print(f"\nCongratulations! You have been connected to a spotify account with the username {username}\n")
 
     except:
         print("Probably you have made many requests in a short manner of time, please wait a little:)")
         time.sleep(5)
         try_to_login(sp)
 
-    return username,followers    
+    return username,followers, id    
 
 
 def make_autopct(values):
@@ -28,13 +31,13 @@ def make_autopct(values):
         return f'{val} songs'
     return my_autopct
 
+
 def plot_artists_with_most_songs(singers, n=10):
     """Plots the top N singers with the most liked songs"""
     singers_unique = set(singers)
     names = []
     times = []
     for singer in singers_unique:
-        print(singers.count(singer))
         names.append(singer)
         times.append(singers.count(singer))
 
