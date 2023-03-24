@@ -6,6 +6,7 @@ import spotipy.util as util
 from secrets import cid, secret
 from functions import *
 from typing import List
+import os
 
     
 
@@ -17,14 +18,22 @@ class Spotify():
         self.cid = cid
         self.secret = secret
 
-        scope = 'user-read-private'      
+        scope = 'user-read-private'     
    
         # Get the token so we don't need to access every time
         token = util.prompt_for_user_token(scope, client_id=self.cid, client_secret=self.secret)
         sp = spotipy.Spotify(auth=token)
-        
-        self.username, self.followers, self.id = try_to_login(sp)       
-    
+
+        # Its possible to do this way, but we have to define the eniromental variables
+        #username = '4qupay5ub5pzp1e6l5fiech73'
+        # try:
+        #    token = util.prompt_for_user_token(username)
+
+        # except:
+        #    os.remove(f".cache-{username}")
+        #    token = util.prompt_for_user_token(username)
+
+        self.username, self.followers, self.id = try_to_login(sp)      
    
     def get_username(self) -> str:
         """
@@ -72,6 +81,7 @@ class Spotify():
         
         results = sp.current_user_saved_tracks()
         tracks = results['items']
+     
         while results['next']:
             results = sp.next(results)
             tracks.extend(results['items'])
@@ -151,6 +161,33 @@ class Spotify():
                 return tracks_to_return, tracks_to_return_id
             else:
                 return tracks_to_return
+
+
+    def return_recently_played(self):
+        """"""
+        scope = 'user-read-recently-played'
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=self.cid, 
+                                                           client_secret=self.secret))
+
+        results = sp.current_user_recently_played(limit=50)
+        recent_tracks = results['items']
+
+        print(len(recent_tracks))
+
+        while results['next']:
+                results = sp.next(results)
+                recent_tracks.extend(results['items'])
+        #print(type(results))
+        #print(results.keys())
+        print(len(recent_tracks))
+        print(recent_tracks[1].keys())
+        print(recent_tracks[1]['track'].keys())
+        print(recent_tracks[1]['track']['id'])
+
+        print("\n\n")
+        print(recent_tracks[1]['played_at'])
+
+
                                       
 
     def get_saved_albums(self):
@@ -164,9 +201,16 @@ class Spotify():
 
 sp = Spotify(cid, secret)
 
-plot_artists_with_most_songs(sp.get_liked_songs_artists())
+#plot_artists_with_most_songs(sp.get_liked_songs_artists())
 
-sp.get_saved_albums()
+#sp.get_saved_albums()
 
-print(sp.return_top_songs())
+#print(sp.return_top_songs())
+
+sp.return_recently_played()
+
+#print(sp.get_liked_songs_artists())
+
+
+
 
